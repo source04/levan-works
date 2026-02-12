@@ -1,0 +1,673 @@
+/* Gerstner Programm FSL */
+@font-face {
+  font-family: "Gerstner Programm FSL";
+  src: url("fonts/Gerstner Programm FSL Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gerstner Programm FSL";
+  src: url("fonts/Gerstner Programm FSL Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gerstner Programm FSL";
+  src: url("fonts/Gerstner Programm FSL Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gerstner Programm FSL";
+  src: url("fonts/Gerstner Programm FSL Medium Italic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gerstner Programm FSL";
+  src: url("fonts/Gerstner Programm FSL Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Akzidenz Grotesk (body) */
+@font-face {
+  font-family: "Akzidenz Grotesk";
+  src: url("fonts/AkzidenzGroteskBQ-Reg.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Akzidenz Grotesk";
+  src: url("fonts/AkzidenzGroteskBQ-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Akzidenz Grotesk";
+  src: url("fonts/AkzidenzGroteskBQ-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #fff;
+  --text: #2a2a2a;
+  --text-muted: #4b4b4b;
+  --header-text: #737373;
+  --accent-green: rgb(180 217 132 0.4);
+  --accent-blue: #2563eb;
+  --accent-red: #b91c1c;
+  --frame-neutral: #e8e8e8;
+  --project-name-text: #4B4B4B;
+  --font: "Akzidenz Grotesk", system-ui, sans-serif;
+  --font-heading: "Gerstner Programm FSL", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Custom scrollbar: 2px, #282828, square */
+.custom-scrollbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100vh;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+.custom-scrollbar__thumb {
+  position: absolute;
+  left: 0;
+  width: 2px;
+  min-height: 20px;
+  background: #282828;
+  border-radius: 0;
+  transition: transform 0.05s linear;
+}
+
+body {
+  margin: 0;
+  padding: 0 20%;
+  font-family: var(--font);
+  font-weight: 400;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+  min-height: 100vh;
+  cursor: crosshair;
+}
+
+/* Disable text/element selection when drawing is active (desktop) so eraser clicks don't select */
+html.drawing-enabled,
+html.drawing-enabled * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cursor-drawing {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: block;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Masks drawing so it appears behind the intro block */
+.intro-drawing-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  background: var(--bg);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Keep header and main above the mask so text is visible */
+.site-header,
+.main-content {
+  position: relative;
+  z-index: 10000;
+}
+
+/* Header: spacer scrolls away so header naturally reaches 4px then sticks */
+.header-spacer {
+  height: 20px;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10001;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 6px;
+  font-size: 14px;
+  color: var(--header-text);
+  border-bottom: 1px solid #eee;
+  background-color: rgba(255, 255, 255, 0.55); /* FFFFFF at 55% */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: visible;
+}
+
+.header-url {
+  font-weight: 500;
+}
+
+.header-actions {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-radio {
+  font-size: 14px;
+  color: var(--header-text);
+}
+
+.header-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 1px; /* 1px white margin around the 16x16 icon */
+  margin: 0;
+  border: none;
+  background-color: #ffffff; /* solid frame so ink doesn't show through */
+  cursor: pointer;
+}
+
+.header-icon-btn img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.header-icon-btn:hover img {
+  filter: brightness(0) saturate(0) invert(0.173); /* #2c2c2c */
+}
+
+.header-icon-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  padding: 2px 4px;
+  background: #2c2c2c;
+  font-weight: 500;
+  color: #fff;
+  font-size: 11px;
+  font-family: var(--font);
+  white-space: nowrap;
+  border-radius: 0;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 10002;
+}
+
+.header-icon-btn:hover .header-icon-tooltip,
+.radio-toggle-wrap:hover .header-icon-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 768px) {
+  .header-icon-tooltip {
+    display: none !important;
+  }
+}
+
+/* Main single-column layout: left content first, then right content below */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin: 0;
+  padding: 24px 0;
+}
+
+.column-left {
+  min-width: 0;
+}
+
+.column-right {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+/* Headlines: Gerstner Programm FSL Bold, 14px */
+h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.project-name {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--project-name-text);
+  display: inline-block;
+  padding: 0;
+  background-color: var(--frame-neutral);
+}
+
+h1 {
+  margin: 0 0 4px;
+}
+
+/* Intro */
+.intro {
+  margin-bottom: 24px;
+  max-width: 38ch;
+}
+
+/* Custom cursor for .intro is set in JS (16x16 resized); do not set here or it overrides body */
+
+.intro p {
+  margin: 0;
+  max-width: 38ch;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Projects */
+
+.project-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.project-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.project {
+  margin-bottom: 0;
+}
+
+.project-heading {
+  margin-bottom: 0;
+}
+
+.project-name--veli {
+  /* Approximate B4D984 @ 40% over white, but fully opaque so ink doesn't show through */
+  background-color: #E1F0CE;
+}
+
+.project-name--chladni {
+  background-color: #EBEBEB; /* 100% */
+}
+
+.project-name--shiori {
+  /* Approximate AAC4F5 @ 30% over white, but fully opaque */
+  background-color: #E5EDFC;
+}
+
+.project-name--jpg {
+  /* Approximate 6C5D29 @ 20% over white, but fully opaque */
+  background-color: #E2DED4;
+}
+
+.project-name--arc {
+  /* Approximate F61325 @ 20% over white, but fully opaque */
+  background-color: #FDCFD3;
+}
+
+.project-name--cloudport {
+  /* Approximate 4CA9D8 @ 20% over white, but fully opaque */
+  background-color: #DBEDF7;
+}
+
+.project-name--pa {
+  /* Approximate 0E7275 @ 10% over white, but fully opaque */
+  background-color: #E7F1F1;
+}
+
+.project-role {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 12px;
+  color: #737373;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.project-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.project-items li {
+  margin-bottom: 0;
+  display: block; /* keep items in a column */
+  cursor: crosshair; /* precision select cursor */
+}
+
+.project-item-label {
+  display: inline-block;
+  padding: 0 4px;
+  background-color: #ffffff;
+  min-width: 36px;
+  text-align: left; /* keep visual alignment the same */
+  font-weight: 400;
+}
+
+.project-items li.project-item--active .project-item-label {
+  font-weight: 400;
+  color: #FFFFFF;
+  background-color: #7F7F7F;
+}
+
+@media (hover: hover) {
+  .project-items li:hover .project-item-label {
+    font-weight: 400;
+    color: #FFFFFF;
+    background-color: #7F7F7F;
+  }
+}
+
+/* Project hover preview image */
+.project-preview {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0; /* behind text and canvas */
+  opacity: 0;
+}
+
+.project-preview img {
+  display: block;
+  max-width: 60vw;
+  max-height: 80vh;
+}
+
+.project-preview--visible {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .project-preview {
+    left: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+  }
+  .project-preview img {
+    max-width: 100%;
+    max-height: 70vh;
+  }
+}
+
+/* Right column: Tools & Contact */
+
+.tools-group {
+  margin-bottom: 0;
+}
+
+.tools-group:last-child {
+  margin-bottom: 0;
+}
+
+.tools-group-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 12px;
+  text-decoration: underline;
+  line-height: 1.2;
+  color: var(--project-name-text);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  display: inline-block;
+  padding: 0;
+  margin: 0 0 4px 0;
+}
+
+.tools-group-title:hover {
+  opacity: 0;
+}
+
+.tools-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tools-list li {
+  margin: 0;
+  margin-bottom: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tools-list li:last-child {
+  margin-bottom: 0;
+}
+
+.tools-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tools-item span {
+  font-weight: 400;
+}
+
+.tools-item:hover span {
+  font-weight: 500;
+}
+
+.tools-icon {
+  display: none; /* hidden by default, shown on hover */
+  width: 16px;
+  height: 16px;
+  margin: 0 0 0 2px; /* 2px gap on the left, none on the right */
+  filter: grayscale(1);
+  vertical-align: middle;
+}
+
+html:not(.tools-icons-disabled) .tools-item:hover .tools-icon {
+  display: inline-block;
+}
+
+.tools-icon-pair {
+  display: none;
+  align-items: center;
+  gap: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.tools-icon-pair .tools-icon {
+  margin-left: 0;
+}
+
+html:not(.tools-icons-disabled) .tools-item:hover .tools-icon-pair {
+  display: inline-flex;
+}
+
+.tools p,
+.contact p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.contact a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.contact a:hover {
+  text-decoration: underline;
+}
+
+.radio-toggle {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--header-text);
+  cursor: pointer;
+}
+
+.radio-toggle-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.radio-toggle-wrap .radio-tooltip {
+  white-space: nowrap;
+  margin-top: 6px;
+}
+
+.radio-toggle:hover {
+  text-decoration: underline;
+}
+
+.radio-toggle::before {
+  content: "";
+}
+
+.contact a::before {
+  content: "";
+}
+
+.contact a:hover::before {
+  content: "→ ";
+}
+
+.site-footer-note {
+  margin: 0;
+  font-size: 12px;
+  color: #7F7F7F;
+  font-style: italic;
+  font-weight: 400;
+  text-align: left;
+}
+
+.intro-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.intro-title-text {
+  display: inline-block;
+}
+
+.intro-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.intro-title-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  body.intro-cursor-active .intro-title-icon {
+    opacity: 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    padding: 0 16px;
+  }
+
+  .main-content {
+    grid-template-columns: 1fr;
+    padding: 16px 0;
+  }
+
+  .column-right {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .tools-item {
+    justify-content: flex-start; /* left-align tools rows on mobile */
+  }
+
+  .header-spacer {
+    height: 16px; /* 16px space above header on mobile; sticks at 4px when scrolled */
+  }
+
+  .header-actions {
+    display: none; /* no drawing on mobile */
+  }
+
+}

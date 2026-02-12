@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>levan.works</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="custom-scrollbar" aria-hidden="true">
+    <div class="custom-scrollbar__thumb" id="scrollbar-thumb"></div>
+  </div>
+  <canvas id="cursor-drawing" class="cursor-drawing" aria-hidden="true"></canvas>
+  <div id="intro-drawing-mask" class="intro-drawing-mask" aria-hidden="true"></div>
+  <div class="header-spacer" aria-hidden="true"></div>
+  <header class="site-header">
+    <span class="header-url">https://levan.works/</span>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="header-icon-btn"
+        id="download-drawing"
+        aria-label="Download your drawing"
+      >
+        <img src="imgs/icons/download.svg" alt="" />
+        <span class="header-icon-tooltip">Download your drawing</span>
+      </button>
+      <button
+        type="button"
+        class="header-icon-btn"
+        id="reset-drawing"
+        aria-label="Reset drawing"
+      >
+        <img src="imgs/icons/refresh.svg" alt="" />
+        <span class="header-icon-tooltip">Reset drawing</span>
+      </button>
+    </div>
+    <span class="header-radio">
+      <span class="radio-toggle-wrap">
+        <button type="button" id="radio-toggle" class="radio-toggle">.+. play my radio</button>
+        <span class="header-icon-tooltip radio-tooltip">My radio streams my collection of music 24/7</span>
+      </span>
+    </span>
+  </header>
+
+  <main class="main-content">
+    <section class="column-left">
+      <div class="intro">
+        <h1 class="intro-title">
+          <span class="intro-title-text">Hi, I'm Levan</span>
+          <span class="intro-title-icon" aria-hidden="true">
+            <img src="imgs/levan.png" alt="" />
+          </span>
+        </h1>
+        <p>levan.works is a personal space of my works, aiming to publish experiments with different digital studies.</p>
+      </div>
+
+      <div class="projects">
+        <h1>Selected projects & works</h1>
+        <ul class="project-list">
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--veli">VELI.STORE</span><span class="project-role">{product lead designer}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="veli_01.png"><span class="project-item-label">-.01.-</span></li>
+              <li data-preview="veli_02.png"><span class="project-item-label">-.02.-</span></li>
+              <li data-preview="veli_03.png"><span class="project-item-label">-.03.-</span></li>
+              <li data-preview="veli_05.png"><span class="project-item-label">-.04.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--chladni">CHLADNI</span><span class="project-role">{product lead designer}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="chladni_01.png"><span class="project-item-label">-.05.-</span></li>
+              <li data-preview="chladni_02.png"><span class="project-item-label">-.06.-</span></li>
+              <li data-preview="chladni_03.png"><span class="project-item-label">-.07.-</span></li>
+              <li data-preview="cladni_04.png"><span class="project-item-label">-.08.-</span></li>
+              <li data-preview="chladni_05.png"><span class="project-item-label">-.09.-</span></li>
+              <li data-preview="cladni_06.png"><span class="project-item-label">-.10.-</span></li>
+              <li data-preview="cladni_07.png"><span class="project-item-label">-.11.-</span></li>
+              <li data-preview="cladni_08.png"><span class="project-item-label">-.12.-</span></li>
+              <li data-preview="cladni_09.png"><span class="project-item-label">-.13.-</span></li>
+              <li data-preview="cladni_10.png"><span class="project-item-label">-.14.-</span></li>
+              <li data-preview="chladni_11.png"><span class="project-item-label">-.15.-</span></li>
+              <li data-preview="chladni_12.png"><span class="project-item-label">-.16.-</span></li>
+              <li data-preview="chladni_13.png"><span class="project-item-label">-.17.-</span></li>
+              <li data-preview="chladni_14.png"><span class="project-item-label">-.18.-</span></li>
+              <li data-preview="chladni_15.png"><span class="project-item-label">-.19.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--jpg">JPG</span><span class="project-role">{product lead designer}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="jpg_01.webp"><span class="project-item-label">-.20.-</span></li>
+              <li data-preview="jpg_02.webp"><span class="project-item-label">-.21.-</span></li>
+              <li data-preview="jpg_04.webp"><span class="project-item-label">-.22.-</span></li>
+              <li data-preview="jpg_05.webp"><span class="project-item-label">-.23.-</span></li>
+              <li data-preview="jpg_06.webp"><span class="project-item-label">-.24.-</span></li>
+              <li data-preview="jpg_07.webp"><span class="project-item-label">-.25.-</span></li>
+              <li data-preview="jpg_08.webp"><span class="project-item-label">-.26.-</span></li>
+              <li data-preview="jpg_09.webp"><span class="project-item-label">-.27.-</span></li>
+              <li data-preview="jpg_10.webp"><span class="project-item-label">-.28.-</span></li>
+              <li data-preview="jpg_11.webp"><span class="project-item-label">-.29.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--shiori">SHIORI (栞)</span><span class="project-role">{product lead designer, development}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="shiori_01.webp"><span class="project-item-label">-.30.-</span></li>
+              <li data-preview="shiori_02.webp"><span class="project-item-label">-.31.-</span></li>
+              <li data-preview="shiori_03.webp"><span class="project-item-label">-.32.-</span></li>
+              <li data-preview="shiori_04.webp"><span class="project-item-label">-.33.-</span></li>
+              <li data-preview="shiori_05.webp"><span class="project-item-label">-.34.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--pa">PA.LABORATORY</span><span class="project-role">{product lead designer, development}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="palab_01.webp"><span class="project-item-label">-.35.-</span></li>
+              <li data-preview="palab_02.webp"><span class="project-item-label">-.36.-</span></li>
+              <li data-preview="palab_03.webp"><span class="project-item-label">-.37.-</span></li>
+              <li data-preview="palab_04.webp"><span class="project-item-label">-.38.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--arc">ARC</span><span class="project-role">{product lead designer}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="arc_01.avif"><span class="project-item-label">-.39.-</span></li>
+              <li data-preview="arc_02.avif"><span class="project-item-label">-.40.-</span></li>
+              <li data-preview="arc_03.webp"><span class="project-item-label">-.41.-</span></li>
+              <li data-preview="arc_04.webp"><span class="project-item-label">-.42.-</span></li>
+            </ul>
+          </li>
+          <li class="project">
+            <div class="project-heading">
+              <span class="project-name project-name--cloudport">CLOUDPORT</span><span class="project-role">{product lead designer}</span>
+            </div>
+            <ul class="project-items">
+              <li data-preview="cloudport_01.avif"><span class="project-item-label">-.43.-</span></li>
+              <li data-preview="cloudport_02.webp"><span class="project-item-label">-.44.-</span></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="column-right">
+      <div class="tools">
+        <h1>Stack</h1>
+
+        <div class="tools-group">
+          <h2 class="tools-group-title">Product &amp; Systems</h2>
+          <ul class="tools-list">
+            <li class="tools-item">
+              <span>Figma</span>
+              <img src="imgs/icons/Figma.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Design Systems</span>
+              <img src="imgs/icons/Design_systems.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>User Flows</span>
+              <img src="imgs/icons/User_flow.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>UX Writing</span>
+              <img src="imgs/icons/Ux_writing.svg" alt="" class="tools-icon" />
+            </li>
+          </ul>
+        </div>
+
+        <div class="tools-group">
+          <h2 class="tools-group-title">Prototype &amp; Code</h2>
+          <ul class="tools-list">
+            <li class="tools-item">
+              <span>Framer</span>
+              <img src="imgs/icons/Framer.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>HTML/CSS</span>
+              <span class="tools-icon-pair">
+                <img src="imgs/icons/Html.svg" alt="" class="tools-icon" />
+                <img src="imgs/icons/Css.svg" alt="" class="tools-icon" />
+              </span>
+            </li>
+            <li class="tools-item">
+              <span>Git</span>
+              <img src="imgs/icons/Github.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Cursor</span>
+              <img src="imgs/icons/Cursor.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Claude</span>
+              <img src="imgs/icons/Claude.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Lovable</span>
+              <img src="imgs/icons/Lovable.svg" alt="" class="tools-icon" />
+            </li>
+          </ul>
+        </div>
+
+        <div class="tools-group">
+          <h2 class="tools-group-title">Workflow</h2>
+          <ul class="tools-list">
+            <li class="tools-item">
+              <span>Notion</span>
+              <img src="imgs/icons/Notion.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Slack</span>
+              <img src="imgs/icons/Slack.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Are.na</span>
+              <img src="imgs/icons/Arena.svg" alt="" class="tools-icon" />
+            </li>
+          </ul>
+        </div>
+
+        <div class="tools-group">
+          <h2 class="tools-group-title">Extra</h2>
+          <ul class="tools-list">
+            <li class="tools-item">
+              <span>Illustrator</span>
+              <img src="imgs/icons/Illustrator.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Photoshop</span>
+              <img src="imgs/icons/Photoshop.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Premiere Pro</span>
+              <img src="imgs/icons/Premiere.svg" alt="" class="tools-icon" />
+            </li>
+            <li class="tools-item">
+              <span>Ableton</span>
+              <img src="imgs/icons/Ableton.svg" alt="" class="tools-icon" />
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="contact">
+        <h1>Contact</h1>
+        <p><a href="mailto:me@levan.works">me@levan.works</a></p>
+      </div>
+      <p class="site-footer-note">
+        -,',- ver.1.0.2<br />
+        for the best experience, use the desktop version<br />
+        2026_design &amp; development by levan.works
+      </p>
+    </section>
+  </main>
+  <div class="project-preview" id="project-preview" aria-hidden="true">
+    <img id="project-preview-img" alt="" />
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
