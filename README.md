@@ -1,4 +1,4 @@
-# levan.works
+# levan.work
 
 Personal portfolio — design implemented from Figma.
 
