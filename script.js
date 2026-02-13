@@ -13,6 +13,18 @@ function updateHeaderTime() {
 updateHeaderTime();
 setInterval(updateHeaderTime, 1000);
 
+// Export drawing canvas with white background (for download/send)
+function drawingCanvasWithWhiteBg(sourceCanvas) {
+  const out = document.createElement('canvas');
+  out.width = sourceCanvas.width;
+  out.height = sourceCanvas.height;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, out.width, out.height);
+  ctx.drawImage(sourceCanvas, 0, 0);
+  return out;
+}
+
 // Download current drawing as PNG
 (function () {
   const button = document.getElementById('download-drawing');
@@ -42,8 +54,9 @@ setInterval(updateHeaderTime, 1000);
   button.addEventListener('click', function () {
     if (!canvas.width || !canvas.height) return;
 
-    if (canvas.toBlob) {
-      canvas.toBlob(function (blob) {
+    const exportCanvas = drawingCanvasWithWhiteBg(canvas);
+    if (exportCanvas.toBlob) {
+      exportCanvas.toBlob(function (blob) {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
         triggerDownload(url);
@@ -52,7 +65,7 @@ setInterval(updateHeaderTime, 1000);
         }, 1000);
       }, 'image/png');
     } else {
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = exportCanvas.toDataURL('image/png');
       triggerDownload(dataUrl);
     }
   });
@@ -101,8 +114,199 @@ if (!TOOLS_ICONS_ENABLED) {
   updateLabel();
 })();
 
-// Project hover previews (JPG series, etc.) — hover on desktop, tap-to-show on mobile
+// First-visit preload: loader + preload all preview images, then enable hover previews
 (function () {
+  var PRELOAD_STORAGE_KEY = 'levan_preload_v1';
+  var IMAGE_BASE = 'imgs/works/';
+  var TIMEOUT_MS = 6000;
+  var FADE_OUT_MS = 200;
+
+  function getPreviewUrls() {
+    var nodes = document.querySelectorAll('[data-preview]');
+    var seen = {};
+    var urls = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var src = nodes[i].getAttribute('data-preview');
+      if (src && !seen[src]) {
+        seen[src] = true;
+        urls.push(IMAGE_BASE + src);
+      }
+    }
+    return urls;
+  }
+
+  function loadOneImage(url) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () {
+        if (typeof img.decode === 'function') {
+          img.decode().then(resolve).catch(resolve);
+        } else {
+          resolve();
+        }
+      };
+      img.onerror = resolve;
+      img.src = url;
+    });
+  }
+
+  function preloadAllWithProgress(urls, onProgress) {
+    var total = urls.length;
+    var done = 0;
+    if (total === 0) return Promise.resolve();
+    function next(i) {
+      if (i >= total) return Promise.resolve();
+      return loadOneImage(urls[i]).then(function () {
+        done++;
+        try {
+          onProgress(total === 0 ? 100 : Math.round((done / total) * 100));
+        } catch (e) {}
+        return next(i + 1);
+      });
+    }
+    return next(0);
+  }
+
+  /* ── Typing progress bar ── */
+  var PATTERN = ':.';
+  var TYPING_INTERVAL_MS = 15;
+  var BAR_LEN = 0; // computed at runtime
+  var currentFilled = 0;
+  var targetFilled = 0;
+  var typingTimer = null;
+
+  function computeBarLen() {
+    var bar = document.getElementById('preload-loader-bar');
+    var fill = document.getElementById('preload-loader-fill');
+    if (!bar || !fill) return 60; // fallback
+    // Measure how wide the container is
+    var containerW = bar.parentElement ? bar.parentElement.offsetWidth : 300;
+    // Measure width of "100%" label (worst-case pct text)
+    var pctEl = document.getElementById('preload-loader-pct');
+    var pctW = 0;
+    if (pctEl) {
+      var saved = pctEl.textContent;
+      pctEl.textContent = '100%';
+      pctW = pctEl.offsetWidth;
+      pctEl.textContent = saved;
+    }
+    // Measure width of a single ":." in the fill font
+    var probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:' +
+      getComputedStyle(fill).font;
+    probe.textContent = ':.';
+    document.body.appendChild(probe);
+    var pairW = probe.offsetWidth || 6;
+    document.body.removeChild(probe);
+    // Available width for fill chars
+    var available = containerW - pctW;
+    var chars = Math.floor(available / (pairW / 2)); // width per single char
+    return Math.max(10, chars);
+  }
+
+  function getBarEls() {
+    return {
+      fill: document.getElementById('preload-loader-fill'),
+      pct: document.getElementById('preload-loader-pct')
+    };
+  }
+
+  function buildFillString(len) {
+    if (len <= 0) return '';
+    var str = '';
+    for (var i = 0; i < Math.ceil(len / PATTERN.length); i++) str += PATTERN;
+    return str.slice(0, len);
+  }
+
+  function renderBar() {
+    var els = getBarEls();
+    if (els.fill) els.fill.textContent = buildFillString(currentFilled);
+  }
+
+  function typeTick() {
+    if (currentFilled < targetFilled) {
+      currentFilled++;
+      renderBar();
+      typingTimer = setTimeout(typeTick, TYPING_INTERVAL_MS);
+    } else {
+      typingTimer = null;
+    }
+  }
+
+  function setProgress(pct) {
+    if (BAR_LEN === 0) BAR_LEN = computeBarLen();
+    var els = getBarEls();
+    if (els.pct) els.pct.textContent = pct + '%';
+    var newTarget = Math.round((pct / 100) * BAR_LEN);
+    if (newTarget > BAR_LEN) newTarget = BAR_LEN;
+    if (newTarget < 0) newTarget = 0;
+    targetFilled = newTarget;
+    if (!typingTimer && currentFilled < targetFilled) {
+      typeTick();
+    }
+  }
+
+  function hideLoader() {
+    var loader = document.getElementById('preload-loader');
+    if (!loader) return;
+    loader.classList.add('is-hidden');
+    loader.setAttribute('aria-busy', 'false');
+    setTimeout(function () {
+      loader.style.display = 'none';
+    }, FADE_OUT_MS);
+  }
+
+  function runPreload() {
+    var loader = document.getElementById('preload-loader');
+    if (!loader) {
+      if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+      return;
+    }
+    var urls = getPreviewUrls();
+    setProgress(0);
+    var preloadDone = preloadAllWithProgress(urls, setProgress);
+    var timeout = new Promise(function (r) {
+      setTimeout(r, TIMEOUT_MS);
+    });
+    Promise.race([preloadDone, timeout])
+      .then(function () {
+        try {
+          localStorage.setItem(PRELOAD_STORAGE_KEY, '1');
+        } catch (e) {}
+        setProgress(100);
+        hideLoader();
+        if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+      })
+      .catch(function () {
+        try {
+          localStorage.setItem(PRELOAD_STORAGE_KEY, '1');
+        } catch (e) {}
+        hideLoader();
+        if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+      });
+  }
+
+  function maybeRun() {
+    try {
+      if (localStorage.getItem(PRELOAD_STORAGE_KEY) === '1') {
+        var loader = document.getElementById('preload-loader');
+        if (loader) loader.style.display = 'none';
+        if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+        return;
+      }
+    } catch (e) {}
+    runPreload();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', maybeRun);
+  } else {
+    maybeRun();
+  }
+})();
+
+// Project hover previews — enabled after preload (or immediately on return visits)
+function initHoverPreviews() {
   const preview = document.getElementById('project-preview');
   const previewImg = document.getElementById('project-preview-img');
   const projects = document.querySelector('.projects');
@@ -112,7 +316,7 @@ if (!TOOLS_ICONS_ENABLED) {
     return window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 768px)').matches;
   };
 
-  let activeItem = null; // on touch: the <li> that is currently "selected"
+  let activeItem = null;
 
   function updatePreviewPosition() {
     const itemsColumn = projects.querySelector('.project-items');
@@ -143,12 +347,13 @@ if (!TOOLS_ICONS_ENABLED) {
     if (li) li.classList.add('project-item--active');
   }
 
-  // Desktop: hover shows preview; pointerleave hides it
   projects.addEventListener(
     'pointerover',
     function (e) {
-      if (touchLike()) return; // on mobile we use click only
-      const li = e.target.closest('li');
+      if (touchLike()) return;
+      const label = e.target.closest('.project-item-label');
+      if (!label) return;
+      const li = label.closest('li');
       if (!li || !projects.contains(li)) return;
       const src = li.getAttribute('data-preview');
       if (!src) {
@@ -161,15 +366,23 @@ if (!TOOLS_ICONS_ENABLED) {
   );
 
   projects.addEventListener(
+    'pointermove',
+    function (e) {
+      if (touchLike() && activeItem) return;
+      if (!touchLike() && !e.target.closest('.project-item-label')) hidePreview();
+    },
+    { passive: true }
+  );
+
+  projects.addEventListener(
     'pointerleave',
     function () {
-      if (touchLike() && activeItem) return; // on mobile keep preview when an item is active
+      if (touchLike() && activeItem) return;
       hidePreview();
     },
     { passive: true }
   );
 
-  // Mobile: tap project item to show preview and keep it; tap same item or elsewhere to close
   projects.addEventListener('click', function (e) {
     if (!touchLike()) return;
     const li = e.target.closest('.project-items li');
@@ -189,19 +402,89 @@ if (!TOOLS_ICONS_ENABLED) {
       }
       return;
     }
-    // Click inside .projects but not on an item (e.g. heading) — close preview
     hidePreview();
     setActiveItem(null);
   });
 
   document.addEventListener('click', function (e) {
     if (!touchLike()) return;
-    if (projects.contains(e.target)) return; // handled above
+    if (projects.contains(e.target)) return;
     hidePreview();
     setActiveItem(null);
   });
 
   window.addEventListener('resize', updatePreviewPosition);
+}
+window.initHoverPreviews = initHoverPreviews;
+
+// Project name description tooltip (follows cursor)
+(function () {
+  const tooltip = document.getElementById('project-description-tooltip');
+  const projects = document.querySelector('.projects');
+  if (!tooltip || !projects) return;
+
+  const OFFSET_X = 14;
+  const OFFSET_Y = 14;
+
+  const touchLike = function () {
+    return window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 768px)').matches;
+  };
+
+  function show(e, text) {
+    if (touchLike() || !text || !text.trim()) return;
+    tooltip.textContent = text.trim();
+    tooltip.classList.add('is-visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+    updatePosition(e);
+  }
+
+  function updatePosition(e) {
+    let x = e.clientX + OFFSET_X;
+    let y = e.clientY + OFFSET_Y;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+    const rect = tooltip.getBoundingClientRect();
+    const pad = 8;
+    if (rect.width && rect.height) {
+      if (x + rect.width + pad > window.innerWidth) x = e.clientX - rect.width - OFFSET_X;
+      if (y + rect.height + pad > window.innerHeight) y = e.clientY - rect.height - OFFSET_Y;
+      if (x < pad) x = pad;
+      if (y < pad) y = pad;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+  }
+
+  function hide() {
+    tooltip.classList.remove('is-visible');
+    tooltip.setAttribute('aria-hidden', 'true');
+  }
+
+  projects.addEventListener('mouseenter', function (e) {
+    const name = e.target.closest('.project-name');
+    if (!name) return;
+    const heading = name.closest('.project-heading');
+    const desc = heading && heading.getAttribute('data-project-description');
+    show(e, desc);
+  }, true);
+
+  projects.addEventListener('mousemove', function (e) {
+    if (!tooltip.classList.contains('is-visible')) return;
+    const name = e.target.closest('.project-name');
+    if (!name) return;
+    updatePosition(e);
+  }, true);
+
+  projects.addEventListener('mouseleave', function (e) {
+    const next = e.relatedTarget;
+    if (!next || !next.closest || !next.closest('.project-name')) hide();
+  }, true);
+
+  document.addEventListener('mousemove', function (e) {
+    if (!tooltip.classList.contains('is-visible')) return;
+    if (!e.target.closest || !e.target.closest('.project-name')) return;
+    updatePosition(e);
+  });
 })();
 
 // Cursor drawing: thin persistent line, no delay, no fade

@@ -4,9 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>levan.work</title>
+  <link rel="icon" href="favicon/favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon/favicon-96x96.png" type="image/png" sizes="96x96" />
+  <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="favicon/site.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="preload-loader" class="preload-loader" aria-live="polite" aria-busy="true" role="status">
+    <div class="preload-loader__inner">
+      <div class="preload-loader__header">
+        <span class="preload-loader__title">levan.work</span>
+        <span class="preload-loader__icon" aria-hidden="true"><img src="imgs/levan.png" alt="" /></span>
+      </div>
+      <p class="preload-loader__desc">This is a personal space of my works, aiming to publish experiments with different digital studies.</p>
+      <div class="preload-loader__progress">
+        <span class="preload-loader__bar" id="preload-loader-bar" aria-hidden="true"><span class="preload-loader__bar-fill" id="preload-loader-fill"></span><span class="preload-loader__pct" id="preload-loader-pct">0%</span></span>
+      </div>
+    </div>
+  </div>
   <div class="custom-scrollbar" aria-hidden="true">
     <div class="custom-scrollbar__thumb" id="scrollbar-thumb"></div>
   </div>
@@ -59,8 +76,8 @@
         <h1>Selected projects & works</h1>
         <ul class="project-list">
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--veli">VELI.STORE</span><span class="project-role">{product lead designer}</span>
+            <div class="project-heading" data-project-description="One of the most popular e-commerce platforms in Georgia. The platform focuses on saving customers time through a seamless, user-centered online shopping experience.">
+              <span class="project-name project-name--veli">VELI.STORE</span><span class="project-role">{product design}</span>
             </div>
             <ul class="project-items">
               <li data-preview="veli_01.png"><span class="project-item-label">-.01.-</span></li>
@@ -70,8 +87,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--chladni">CHLADNI</span><span class="project-role">{product lead designer}</span>
+            <div class="project-heading" data-project-description="Chladni is a predictive maintenance platform for industrial vibration monitoring — I have designed an inner system operating at the intersection of machine learning, physical assets, and human responsibility.">
+              <span class="project-name project-name--chladni">CHLADNI</span><span class="project-role">{product design}</span>
             </div>
             <ul class="project-items">
               <li data-preview="chladni_01.png"><span class="project-item-label">-.05.-</span></li>
@@ -92,8 +109,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--jpg">JPG</span><span class="project-role">{product lead designer}</span>
+            <div class="project-heading" data-project-description="E-commerce platform for Printshop and Artist community based in Tbilisi.">
+              <span class="project-name project-name--jpg">JPG</span><span class="project-role">{product design}</span>
             </div>
             <ul class="project-items">
               <li data-preview="jpg_01.webp"><span class="project-item-label">-.20.-</span></li>
@@ -109,8 +126,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--shiori">SHIORI (栞)</span><span class="project-role">{product lead designer, development}</span>
+            <div class="project-heading" data-project-description="SHIORI (栞) is a place where I collect some writings, prose, poetry, movies, videos and TV shows, suggested by people (and myself:).">
+              <span class="project-name project-name--shiori">SHIORI (栞)</span><span class="project-role">{product design, development}</span>
             </div>
             <ul class="project-items">
               <li data-preview="shiori_01.webp"><span class="project-item-label">-.30.-</span></li>
@@ -121,8 +138,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--pa">PA.LABORATORY</span><span class="project-role">{product lead designer, development}</span>
+            <div class="project-heading" data-project-description="The idea of ​​the Performing Arts Laboratory involves experimental research and development of theatrical art, performance and other related performing practices.">
+              <span class="project-name project-name--pa">PA.LABORATORY</span><span class="project-role">{product design, development}</span>
             </div>
             <ul class="project-items">
               <li data-preview="palab_01.webp"><span class="project-item-label">-.35.-</span></li>
@@ -132,8 +149,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--arc">ARC</span><span class="project-role">{product lead designer}</span>
+            <div class="project-heading" data-project-description="An experimental mobile archive interface for contemporary artists, built around principles of structured contribution, non-performative navigation, and deliberate slowness.">
+              <span class="project-name project-name--arc">ARC</span><span class="project-role">{product design}</span>
             </div>
             <ul class="project-items">
               <li data-preview="arc_01.avif"><span class="project-item-label">-.39.-</span></li>
@@ -143,8 +160,8 @@
             </ul>
           </li>
           <li class="project">
-            <div class="project-heading">
-              <span class="project-name project-name--cloudport">CLOUDPORT</span><span class="project-role">{product lead designer}</span>
+            <div class="project-heading" data-project-description="CloudPort — a mobile flight booking experience designed to simplify and elevate the way people plan travel.">
+              <span class="project-name project-name--cloudport">CLOUDPORT</span><span class="project-role">{product design}</span>
             </div>
             <ul class="project-items">
               <li data-preview="cloudport_01.avif"><span class="project-item-label">-.43.-</span></li>
@@ -153,9 +170,7 @@
           </li>
         </ul>
       </div>
-    </section>
 
-    <section class="column-right">
       <div class="tools">
         <h1>Stack</h1>
 
@@ -258,9 +273,12 @@
         <h1>Contact</h1>
         <p><a href="mailto:me@levan.work">me@levan.work</a></p>
       </div>
+    </section>
+
+    <section class="column-right">
       <p class="site-footer-note">
         -,',- ver.1.0.2<br />
-        for the best experience, use the desktop version<br />
+        for the better experience, use the desktop version<br />
         2026_design &amp; development by levan.work
       </p>
     </section>
@@ -268,6 +286,7 @@
   <div class="project-preview" id="project-preview" aria-hidden="true">
     <img id="project-preview-img" alt="" />
   </div>
+  <div id="project-description-tooltip" class="project-description-tooltip" aria-hidden="true" role="tooltip"></div>
 
   <script src="script.js"></script>
 </body>

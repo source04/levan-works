@@ -24,6 +24,13 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   let urlPath = req.url === '/' ? '/index.html' : req.url;
+  const queryIndex = urlPath.indexOf('?');
+  const pathOnly = queryIndex >= 0 ? urlPath.slice(0, queryIndex) : urlPath;
+  try {
+    urlPath = decodeURIComponent(pathOnly);
+  } catch (_) {
+    urlPath = pathOnly;
+  }
   urlPath = path.normalize(urlPath).replace(/^(\.\.(\/|\\|$))+/, '');
   const filePath = path.join(ROOT, urlPath);
 

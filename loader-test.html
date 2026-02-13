@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loader test – levan.work</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="preload-loader" class="preload-loader" aria-live="polite" aria-busy="true" role="status">
+    <div class="preload-loader__inner">
+      <div class="preload-loader__header">
+        <span class="preload-loader__title">levan.work</span>
+        <span class="preload-loader__icon" aria-hidden="true"><img src="imgs/levan.png" alt="" /></span>
+      </div>
+      <p class="preload-loader__desc">This is a personal space of my works, aiming to publish experiments with different digital studies.</p>
+      <div class="preload-loader__progress">
+        <span class="preload-loader__bar" id="preload-loader-bar" aria-hidden="true"><span class="preload-loader__bar-fill" id="preload-loader-fill"></span><span class="preload-loader__pct" id="preload-loader-pct">0%</span></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var PATTERN = ':.';
+      var TYPING_MS = 15;
+      var DURATION = 3000;
+      var BAR_LEN = 0;
+
+      var fillEl = document.getElementById('preload-loader-fill');
+      var pctEl = document.getElementById('preload-loader-pct');
+      var loader = document.getElementById('preload-loader');
+
+      var currentFilled = 0;
+      var targetFilled = 0;
+      var typingTimer = null;
+
+      function computeBarLen() {
+        var bar = document.getElementById('preload-loader-bar');
+        if (!bar || !fillEl) return 60;
+        var containerW = bar.parentElement ? bar.parentElement.offsetWidth : 300;
+        var pctW = 0;
+        if (pctEl) {
+          var saved = pctEl.textContent;
+          pctEl.textContent = '100%';
+          pctW = pctEl.offsetWidth;
+          pctEl.textContent = saved;
+        }
+        var probe = document.createElement('span');
+        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:' +
+          getComputedStyle(fillEl).font;
+        probe.textContent = ':.';
+        document.body.appendChild(probe);
+        var pairW = probe.offsetWidth || 6;
+        document.body.removeChild(probe);
+        var available = containerW - pctW;
+        var chars = Math.floor(available / (pairW / 2));
+        return Math.max(10, chars);
+      }
+
+      function buildFill(len) {
+        if (len <= 0) return '';
+        var s = '';
+        for (var i = 0; i < Math.ceil(len / PATTERN.length); i++) s += PATTERN;
+        return s.slice(0, len);
+      }
+
+      function renderBar() {
+        if (fillEl) fillEl.textContent = buildFill(currentFilled);
+      }
+
+      function typeTick() {
+        if (currentFilled < targetFilled) {
+          currentFilled++;
+          renderBar();
+          typingTimer = setTimeout(typeTick, TYPING_MS);
+        } else {
+          typingTimer = null;
+        }
+      }
+
+      function setProgress(pct) {
+        if (BAR_LEN === 0) BAR_LEN = computeBarLen();
+        if (pctEl) pctEl.textContent = pct + '%';
+        targetFilled = Math.min(BAR_LEN, Math.max(0, Math.round((pct / 100) * BAR_LEN)));
+        if (!typingTimer && currentFilled < targetFilled) typeTick();
+      }
+
+      var start = performance.now();
+      function tick(now) {
+        var pct = Math.min(100, Math.round(((now - start) / DURATION) * 100));
+        setProgress(pct);
+        if (pct < 100) {
+          requestAnimationFrame(tick);
+          return;
+        }
+        setTimeout(function () {
+          if (loader) {
+            loader.classList.add('is-hidden');
+            loader.setAttribute('aria-busy', 'false');
+          }
+        }, 600);
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
