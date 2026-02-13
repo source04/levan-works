@@ -39,7 +39,7 @@ function drawingCanvasWithWhiteBg(sourceCanvas) {
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
-    return `levan-works-pattern-${y}${m}${d}-${hh}${mm}${ss}.png`;
+    return `levan-work-pattern-${y}${m}${d}-${hh}${mm}${ss}.png`;
   }
 
   function triggerDownload(url) {
@@ -334,11 +334,13 @@ function initHoverPreviews() {
     updatePreviewPosition();
     previewImg.src = 'imgs/works/' + src;
     preview.classList.add('project-preview--visible');
+    document.body.classList.add('project-preview-active');
   }
 
   function hidePreview() {
     preview.classList.remove('project-preview--visible');
     previewImg.removeAttribute('src');
+    document.body.classList.remove('project-preview-active');
   }
 
   function setActiveItem(li) {
@@ -423,8 +425,8 @@ window.initHoverPreviews = initHoverPreviews;
   const projects = document.querySelector('.projects');
   if (!tooltip || !projects) return;
 
-  const OFFSET_X = 14;
-  const OFFSET_Y = 14;
+  const OFFSET_X = 8;
+  const OFFSET_Y = 8;
 
   const touchLike = function () {
     return window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 768px)').matches;
@@ -505,6 +507,9 @@ window.initHoverPreviews = initHoverPreviews;
 
   let segments = [[]]; // array of point arrays; new segment on pointer leave
   let dpr = 1;
+  let drawingDisabled = false; // true during 3s "fix" blink after click
+  let blinkTimeout = null;
+  const BLINK_DURATION_MS = 2000;
 
   function resize() {
     const w = window.innerWidth;
@@ -541,6 +546,7 @@ window.initHoverPreviews = initHoverPreviews;
   }
 
   function onPointerMove(e) {
+    if (drawingDisabled) return;
     const x = e.clientX + jitter();
     const y = e.clientY + jitter();
     const seg = segments[segments.length - 1];
@@ -563,19 +569,104 @@ window.initHoverPreviews = initHoverPreviews;
   }
 
   function reset() {
+    if (blinkTimeout) {
+      clearTimeout(blinkTimeout);
+      blinkTimeout = null;
+    }
+    canvas.classList.remove('cursor-drawing--blinking');
+    drawingDisabled = false;
     segments = [[]];
     redraw();
+  }
+
+  function startBlink() {
+    if (blinkTimeout) clearTimeout(blinkTimeout);
+    canvas.classList.add('cursor-drawing--blinking');
+    drawingDisabled = true;
+    blinkTimeout = setTimeout(function () {
+      canvas.classList.remove('cursor-drawing--blinking');
+      drawingDisabled = false;
+      blinkTimeout = null;
+    }, BLINK_DURATION_MS);
   }
 
   function onPointerDown(e) {
     if (e.button !== 0) return;
     if (e.target.closest('button, a, [role="button"]')) return;
-    reset();
+    segments.push([]); // new segment so next stroke starts fresh after fix
+    startBlink();
+  }
+
+  // ── Drawing hint tooltip: shown once after first draw ──
+  const HINT_STORAGE_KEY = 'levan_drawing_hint_v1';
+  let hintShown = false;
+  let hintActive = false;
+  let hintTimeout = null;
+  let lastCursorX = 0;
+  let lastCursorY = 0;
+  const hintEl = document.getElementById('drawing-hint-tooltip');
+  const HINT_OFFSET_X = 8;
+  const HINT_OFFSET_Y = 8;
+
+  function positionHintAt(cx, cy) {
+    if (!hintEl || !hintActive) return;
+    let x = cx + HINT_OFFSET_X;
+    let y = cy + HINT_OFFSET_Y;
+    hintEl.style.left = x + 'px';
+    hintEl.style.top = y + 'px';
+    const rect = hintEl.getBoundingClientRect();
+    const pad = 8;
+    if (rect.width && rect.height) {
+      if (x + rect.width + pad > window.innerWidth) x = cx - rect.width - HINT_OFFSET_X;
+      if (y + rect.height + pad > window.innerHeight) y = cy - rect.height - HINT_OFFSET_Y;
+      if (x < pad) x = pad;
+      if (y < pad) y = pad;
+      hintEl.style.left = x + 'px';
+      hintEl.style.top = y + 'px';
+    }
+  }
+
+  function showHint() {
+    if (!hintEl) return;
+    hintActive = true;
+    positionHintAt(lastCursorX, lastCursorY);
+    hintEl.classList.add('is-visible');
+    hintEl.setAttribute('aria-hidden', 'false');
+    // Hide after 7 seconds
+    setTimeout(function () {
+      hintActive = false;
+      hintEl.classList.remove('is-visible');
+      hintEl.setAttribute('aria-hidden', 'true');
+    }, 7000);
+  }
+
+  function onFirstDraw() {
+    if (hintShown) return;
+    hintShown = true;
+    try { localStorage.setItem(HINT_STORAGE_KEY, '1'); } catch (e) {}
+    hintTimeout = setTimeout(showHint, 5000);
+  }
+
+  // Check if hint was already shown in a previous visit
+  try {
+    if (localStorage.getItem(HINT_STORAGE_KEY) === '1') hintShown = true;
+  } catch (e) {}
+
+  // Wrap onPointerMove to detect first stroke
+  const origOnPointerMove = onPointerMove;
+  function onPointerMoveWithHint(e) {
+    origOnPointerMove(e);
+    lastCursorX = e.clientX;
+    lastCursorY = e.clientY;
+    if (!hintShown && segments[segments.length - 1].length >= 3) {
+      onFirstDraw();
+    }
+    positionHintAt(lastCursorX, lastCursorY);
   }
 
   resize();
   window.addEventListener('resize', resize);
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  window.addEventListener('pointermove', onPointerMoveWithHint, { passive: true });
   document.addEventListener('pointerleave', onPointerLeave);
   document.addEventListener('pointerdown', onPointerDown);
   document.addEventListener('drawing-reset', reset);
