@@ -118,7 +118,7 @@ if (!TOOLS_ICONS_ENABLED) {
 (function () {
   var PRELOAD_STORAGE_KEY = 'levan_preload_v1';
   var IMAGE_BASE = 'imgs/works/';
-  var TIMEOUT_MS = 6000;
+  var TIMEOUT_MS = 10000;
   var FADE_OUT_MS = 200;
 
   function getPreviewUrls() {
@@ -150,21 +150,32 @@ if (!TOOLS_ICONS_ENABLED) {
     });
   }
 
+  var CONCURRENT = 8; // load up to 8 images in parallel for faster preload
+
   function preloadAllWithProgress(urls, onProgress) {
     var total = urls.length;
     var done = 0;
     if (total === 0) return Promise.resolve();
-    function next(i) {
-      if (i >= total) return Promise.resolve();
-      return loadOneImage(urls[i]).then(function () {
-        done++;
-        try {
-          onProgress(total === 0 ? 100 : Math.round((done / total) * 100));
-        } catch (e) {}
-        return next(i + 1);
+    function report() {
+      try {
+        onProgress(total === 0 ? 100 : Math.round((done / total) * 100));
+      } catch (e) {}
+    }
+    function loadBatch(start) {
+      if (start >= total) return Promise.resolve();
+      var end = Math.min(start + CONCURRENT, total);
+      var batch = [];
+      for (var i = start; i < end; i++) {
+        batch.push(loadOneImage(urls[i]).then(function () {
+          done++;
+          report();
+        }));
+      }
+      return Promise.all(batch).then(function () {
+        return loadBatch(end);
       });
     }
-    return next(0);
+    return loadBatch(0);
   }
 
   /* ── Typing progress bar ── */
