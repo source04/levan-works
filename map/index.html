@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map of me — levan.work</title>
+  <link rel="icon" href="../favicon/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicon/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="map.css" />
+</head>
+<body class="map-page">
+  <div class="header-spacer" aria-hidden="true"></div>
+  <header class="site-header">
+    <span class="header-url">https://levan.work/map</span>
+    <span class="header-radio">
+      <span class="radio-toggle-wrap">
+        <button type="button" id="radio-toggle" class="radio-toggle">+ play my radio</button>
+        <span class="header-icon-tooltip radio-tooltip">My radio streams prepared collection of music 24/7</span>
+      </span>
+    </span>
+  </header>
+
+  <main class="main-content main-content--map">
+    <section class="map-section">
+      <p class="map__back"><a href="/">← Back to home</a></p>
+      
+      <div class="map__intro">
+        <h1>Map of me</h1>
+        <p>A living visualisation of what currently shapes my thinking. It gathers the subjects I’m engaged with right now — and the connections forming between them. The map is never complete and changes with my attention shifts.</p>
+        <p>You can think of it as some kind of my interpretation of now.</p>
+        <p>Inspired by Christoph Locher, as well as A Rhizomatic Map of Visual Communication, referenced by Locher as one of its conceptual sources.</p>
+      </div>
+      
+      <div class="map__vis-loading" aria-live="polite">Loading Visualization …</div>
+      <div class="map__vis-container">
+        <div class="map__vis"></div>
+      </div>
+      
+    </section>
+  </main>
+
+  <script>
+    // Nodes: id (unique), name (label), weight (0.4–1.2, affects size), type (styling)
+    // Types: "field" | "movement" | "person" | ""
+    let initialNodes = [
+      { id: "design", name: "Design", weight: 1.2, type: "field" },
+      { id: "slow-interaction", name: "Slow interaction design", weight: 0.8, type: "movement" },
+      { id: "slow-movement", name: "Slow movement", weight: 0.8, type: "movement" },
+      { id: "carlo-petrini", name: "Carlo Petrini", weight: 1, type: "person" },
+      { id: "jake-dow-smith", name: "Jake Dow Smith", weight: 1, type: "person" },
+      { id: "writing", name: "Writing", weight: 1, type: "field" },
+      { id: "henry-dumas", name: "Henry Dumas", weight: 1, type: "person" },
+      { id: "alice-notley", name: "Alice Notley", weight: 1, type: "person" },
+      { id: "langston-hughes", name: "Langston Hughes", weight: 1, type: "person" },
+      { id: "sharon-olds", name: "Sharon Olds", weight: 1, type: "person" },
+      { id: "franz-wright", name: "Franz Wright", weight: 1, type: "person" },
+      { id: "jean-little", name: "Jean Little", weight: 1, type: "person" },
+      { id: "alexander-piatigorsky", name: "Alexander Piatigorsky", weight: 1, type: "person" },
+      { id: "energy-infrastructure", name: "Energy/Infrastructure", weight: 0.8, type: "field" },
+      { id: "embodied-energy", name: "Embodied energy", weight: 1, type: "movement" },
+      { id: "off-grid-systems", name: "Off-grid systems", weight: 1, type: "movement" },
+      { id: "local-production", name: "Local production", weight: 1, type: "movement" },
+      { id: "mechanical-vs-digital", name: "Mechanical vs digital", weight: 1, type: "movement" },
+      { id: "low-bandwidth-ux", name: "Low-bandwidth UX", weight: 0.8, type: "movement" },
+      { id: "kris-de-decker", name: "Kris De Decker", weight: 1, type: "person" },
+      { id: "text-first-interfaces", name: "Text-first interfaces", weight: 1, type: "movement" },
+      { id: "pagination-as-rhythm", name: "Pagination as rhythm", weight: 1, type: "movement" },
+      { id: "digital-sabbath", name: "Digital Sabbath", weight: 1, type: "movement" },
+      { id: "self-hosted-tools", name: "Self-hosted tools", weight: 1, type: "movement" },
+      { id: "mechanical-sympathy", name: "Mechanical Sympathy", weight: 1, type: "movement" },
+      { id: "ritual-based-ux", name: "Ritual-Based UX", weight: 1, type: "movement" },
+      { id: "music", name: "Music", weight: 1.3, type: "field" },
+      { id: "field-recording", name: "Field recording as research", weight: 1, type: "movement" },
+      { id: "self-hosted-radio", name: "Self-hosted radio", weight: 1, type: "movement" },
+      { id: "noise-as-foundation", name: "Noise as foundation", weight: 1, type: "movement" },
+      { id: "imperfection-as-identity", name: "Imperfection as identity", weight: 1, type: "movement" },
+      { id: "controlled-chaos", name: "Controlled chaos", weight: 1, type: "movement" },
+      { id: "first-the-body-then-the-home", name: "First the Body, Then the Home", weight: 1, type: "movement" },
+      { id: "philosophy", name: "Philosophy", weight: 0.9, type: "field" },
+      { id: "sofa", name: "S.O.F.A.", weight: 1, type: "movement" },
+      { id: "cavafy", name: "Constantine P. Cavafy", weight: 1, type: "person" },
+      { id: "meta-reflection", name: "Meta-Reflection", weight: 1, type: "movement" },
+      { id: "byung-chul-han", name: "Byung-Chul Han", weight: 1, type: "person" },
+      { id: "non-control", name: "Non-Control", weight: 1, type: "movement" },
+      { id: "scenius", name: "Scenius", weight: 1, type: "movement" },
+      { id: "leisure", name: "Leisure", weight: 1, type: "movement" },
+      { id: "low-tech-internet", name: "Low-Tech Internet", weight: 1, type: "movement" },
+      { id: "listening-as-research", name: "Listening as research", weight: 1, type: "movement" },
+    ];
+
+    // Links: source id → target id (both must exist in initialNodes)
+    let initialLinks = [
+      { source: "slow-interaction", target: "design" },
+      { source: "slow-movement", target: "design" },
+      { source: "carlo-petrini", target: "slow-movement" },
+      { source: "poststructuralism", target: "topic" },
+      { source: "jake-dow-smith", target: "slow-interaction" },
+      { source: "henry-dumas", target: "writing" },
+      { source: "alice-notley", target: "writing" },
+      { source: "langston-hughes", target: "writing" },
+      { source: "sharon-olds", target: "writing" },
+      { source: "franz-wright", target: "writing" },
+      { source: "jean-little", target: "writing" },
+      { source: "alexander-piatigorsky", target: "writing" },
+      { source: "embodied-energy", target: "energy-infrastructure" },
+      { source: "off-grid-systems", target: "energy-infrastructure" },
+      { source: "local-production", target: "energy-infrastructure" },
+      { source: "mechanical-vs-digital", target: "energy-infrastructure" },
+      { source: "mechanical-vs-digital", target: "off-grid-systems" },
+      { source: "low-bandwidth-ux", target: "design" },
+      { source: "kris-de-decker", target: "energy-infrastructure" },
+      { source: "kris-de-decker", target: "off-grid-systems" },
+      { source: "text-first-interfaces", target: "design" },
+      { source: "pagination-as-rhythm", target: "design" },
+      { source: "digital-sabbath", target: "slow-movement" },
+      { source: "self-hosted-tools", target: "energy-infrastructure" },
+      { source: "self-hosted-tools", target: "off-grid-systems" },
+      { source: "mechanical-sympathy", target: "design" },
+      { source: "ritual-based-ux", target: "design" },
+      { source: "field-recording", target: "music" },
+      { source: "self-hosted-radio", target: "music" },
+      { source: "self-hosted-radio", target: "off-grid-systems" },
+      { source: "self-hosted-radio", target: "local-production" },
+      { source: "noise-as-foundation", target: "music" },
+      { source: "imperfection-as-identity", target: "music" },
+      { source: "controlled-chaos", target: "music" },
+      { source: "controlled-chaos", target: "design" },
+      { source: "controlled-chaos", target: "philosophy" },
+      { source: "first-the-body-then-the-home", target: "energy-infrastructure" },
+      { source: "sofa", target: "philosophy" },
+      { source: "sofa", target: "music" },
+      { source: "sofa", target: "design" },
+      { source: "sofa", target: "writing" },
+      { source: "alexander-piatigorsky", target: "philosophy" },
+      { source: "cavafy", target: "philosophy" },
+      { source: "meta-reflection", target: "philosophy" },
+      { source: "byung-chul-han", target: "philosophy" },
+      { source: "non-control", target: "philosophy" },
+      { source: "scenius", target: "philosophy" },
+      { source: "scenius", target: "music" },
+      { source: "scenius", target: "design" },
+      { source: "leisure", target: "design" },
+      { source: "leisure", target: "music" },
+      { source: "leisure", target: "writing" },
+      { source: "leisure", target: "philosophy" },
+      { source: "low-tech-internet", target: "energy-infrastructure" },
+      { source: "listening-as-research", target: "music" },
+    ];
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/webcola@3.4.0/WebCola/cola.min.js"></script>
+  <script src="map.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map Test Report</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+    h1 { color: #2c2c2c; }
+    .test-section {
+      background: #f5f5f5;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+    .checklist li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .checklist li:last-child {
+      border-bottom: none;
+    }
+    button {
+      background: #2c2c2c;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 1rem 0;
+    }
+    button:hover {
+      background: #000;
+    }
+    #console-output {
+      background: #1a1a1a;
+      color: #0f0;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 1rem 0;
+    }
+    .error { color: #ff4444; }
+    .success { color: #44ff44; }
+    .warning { color: #ffaa44; }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #2c2c2c;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Map of me - Test Report</h1>
+  
+  <div class="test-section">
+    <h2>Automated Checks</h2>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="console-output">Click "Run Tests" to check the visualization...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Manual Checklist</h2>
+    <ul class="checklist">
+      <li>✓ Does the page load without errors?</li>
+      <li>✓ Is the graph visible with nodes and links?</li>
+      <li>✓ Do the nodes show labels like "Design", "Interaction Design", etc.?</li>
+      <li>✓ Are there different node styles?
+        <ul>
+          <li>- Regular nodes: white background, black border</li>
+          <li>- Movement nodes: uppercase pill shape (e.g., "POSTSTRUCTURALISM")</li>
+          <li>- Person nodes: dark pill with white text (e.g., "Roland Barthes")</li>
+        </ul>
+      </li>
+      <li>✓ Do hover interactions work? (nodes fade, connections highlight)</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>Live Preview</h2>
+    <iframe src="http://localhost:8080/map/" id="map-frame"></iframe>
+  </div>
+
+  <script>
+    const output = document.getElementById('console-output');
+    
+    function log(message, type = 'info') {
+      const span = document.createElement('div');
+      span.className = type;
+      span.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      output.appendChild(span);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function runTests() {
+      output.innerHTML = '';
+      log('Starting tests...', 'info');
+      
+      const iframe = document.getElementById('map-frame');
+      
+      setTimeout(() => {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          
+          // Test 1: Check if d3 loaded
+          log('Test 1: Checking if d3 is loaded...', 'info');
+          if (iframe.contentWindow.d3) {
+            log('✓ d3 library loaded successfully', 'success');
+          } else {
+            log('✗ d3 library not found', 'error');
+          }
+          
+          // Test 2: Check if cola loaded
+          log('Test 2: Checking if cola is loaded...', 'info');
+          if (iframe.contentWindow.cola) {
+            log('✓ cola library loaded successfully', 'success');
+          } else {
+            log('✗ cola library not found', 'error');
+          }
+          
+          // Test 3: Check if initialNodes exists
+          log('Test 3: Checking if initialNodes is defined...', 'info');
+          if (iframe.contentWindow.initialNodes) {
+            const nodeCount = iframe.contentWindow.initialNodes.length;
+            log(`✓ initialNodes found with ${nodeCount} nodes`, 'success');
+          } else {
+            log('✗ initialNodes not found', 'error');
+          }
+          
+          // Test 4: Check if initialLinks exists
+          log('Test 4: Checking if initialLinks is defined...', 'info');
+          if (iframe.contentWindow.initialLinks) {
+            const linkCount = iframe.contentWindow.initialLinks.length;
+            log(`✓ initialLinks found with ${linkCount} links`, 'success');
+          } else {
+            log('✗ initialLinks not found', 'error');
+          }
+          
+          // Test 5: Check if SVG was created
+          log('Test 5: Checking if SVG elements were created...', 'info');
+          const svg = iframeDoc.querySelector('.map__vis svg');
+          if (svg) {
+            log('✓ SVG element created', 'success');
+            const links = iframeDoc.querySelectorAll('.link');
+            log(`✓ Found ${links.length} link elements`, 'success');
+          } else {
+            log('✗ SVG element not found', 'error');
+          }
+          
+          // Test 6: Check if nodes were created
+          log('Test 6: Checking if node elements were created...', 'info');
+          const nodes = iframeDoc.querySelectorAll('.node:not(.node--fixed)');
+          if (nodes.length > 0) {
+            log(`✓ Found ${nodes.length} node elements`, 'success');
+            
+            // Check node types
+            const movements = iframeDoc.querySelectorAll('.node--movement');
+            const persons = iframeDoc.querySelectorAll('.node--person');
+            const fields = iframeDoc.querySelectorAll('.node--field');
+            
+            log(`  - Movement nodes: ${movements.length}`, 'info');
+            log(`  - Person nodes: ${persons.length}`, 'info');
+            log(`  - Field nodes: ${fields.length}`, 'info');
+          } else {
+            log('✗ No node elements found', 'error');
+          }
+          
+          // Test 7: Check for console errors
+          log('Test 7: Checking browser console...', 'info');
+          log('⚠ Check the browser DevTools console for any JavaScript errors', 'warning');
+          
+          // Test 8: Check if loading message was removed
+          log('Test 8: Checking if loading message was removed...', 'info');
+          const loading = iframeDoc.querySelector('.map__vis-loading');
+          if (!loading) {
+            log('✓ Loading message removed (visualization complete)', 'success');
+          } else {
+            log('⚠ Loading message still present (visualization may still be rendering)', 'warning');
+          }
+          
+          log('\n=== Tests Complete ===', 'success');
+          log('Check the manual checklist above and the live preview below.', 'info');
+          
+        } catch (error) {
+          log(`✗ Error running tests: ${error.message}`, 'error');
+          log('This may be due to cross-origin restrictions.', 'warning');
+          log('Please manually check the page at http://localhost:8080/map/', 'warning');
+        }
+      }, 5000); // Wait 5 seconds for visualization to load
+      
+      log('Waiting 5 seconds for visualization to load...', 'info');
+    }
+    
+    // Auto-run tests after iframe loads
+    document.getElementById('map-frame').addEventListener('load', () => {
+      log('Iframe loaded. Running tests in 5 seconds...', 'info');
+      setTimeout(runTests, 5000);
+    });
+  </script>
+</body>
+</html>

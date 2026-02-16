@@ -117,7 +117,7 @@ if (!TOOLS_ICONS_ENABLED) {
 // First-visit preload: loader + preload all preview images, then enable hover previews
 (function () {
   var PRELOAD_STORAGE_KEY = 'levan_preload_v1';
-  var IMAGE_BASE = 'imgs/works/';
+  var IMAGE_BASE = 'imgs/works_2/';
   var TIMEOUT_MS = 10000;
   var FADE_OUT_MS = 200;
 
@@ -281,18 +281,16 @@ if (!TOOLS_ICONS_ENABLED) {
     });
     Promise.race([preloadDone, timeout])
       .then(function () {
-        try {
-          localStorage.setItem(PRELOAD_STORAGE_KEY, '1');
-        } catch (e) {}
+        try { localStorage.setItem(PRELOAD_STORAGE_KEY, '1'); } catch (e) {}
         setProgress(100);
         hideLoader();
+        document.dispatchEvent(new CustomEvent('preload-complete'));
         if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
       })
       .catch(function () {
-        try {
-          localStorage.setItem(PRELOAD_STORAGE_KEY, '1');
-        } catch (e) {}
+        try { localStorage.setItem(PRELOAD_STORAGE_KEY, '1'); } catch (e) {}
         hideLoader();
+        document.dispatchEvent(new CustomEvent('preload-complete'));
         if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
       });
   }
@@ -302,6 +300,9 @@ if (!TOOLS_ICONS_ENABLED) {
       if (localStorage.getItem(PRELOAD_STORAGE_KEY) === '1') {
         var loader = document.getElementById('preload-loader');
         if (loader) loader.style.display = 'none';
+        setTimeout(function () {
+          document.dispatchEvent(new CustomEvent('preload-complete'));
+        }, 0);
         if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
         return;
       }
@@ -343,7 +344,7 @@ function initHoverPreviews() {
   function showPreview(src) {
     if (!src) return;
     updatePreviewPosition();
-    previewImg.src = 'imgs/works/' + src;
+    previewImg.src = 'imgs/works_2/' + src;
     preview.classList.add('project-preview--visible');
     document.body.classList.add('project-preview-active');
   }
@@ -518,9 +519,14 @@ window.initHoverPreviews = initHoverPreviews;
 
   let segments = [[]]; // array of point arrays; new segment on pointer leave
   let dpr = 1;
-  let drawingDisabled = false; // true during 3s "fix" blink after click
+  let drawingDisabled = false; // true during 2s "fix" blink after click
   let blinkTimeout = null;
   const BLINK_DURATION_MS = 2000;
+
+  function isLoaderVisible() {
+    var el = document.getElementById('preload-loader');
+    return el ? getComputedStyle(el).display !== 'none' : false;
+  }
 
   function resize() {
     const w = window.innerWidth;
@@ -557,7 +563,7 @@ window.initHoverPreviews = initHoverPreviews;
   }
 
   function onPointerMove(e) {
-    if (drawingDisabled) return;
+    if (isLoaderVisible() || drawingDisabled) return;
     const x = e.clientX + jitter();
     const y = e.clientY + jitter();
     const seg = segments[segments.length - 1];
@@ -663,12 +669,16 @@ window.initHoverPreviews = initHoverPreviews;
     if (localStorage.getItem(HINT_STORAGE_KEY) === '1') hintShown = true;
   } catch (e) {}
 
-  // Wrap onPointerMove to detect first stroke
+  // Wrap onPointerMove to detect first stroke (only when loader is gone)
   const origOnPointerMove = onPointerMove;
   function onPointerMoveWithHint(e) {
-    origOnPointerMove(e);
     lastCursorX = e.clientX;
     lastCursorY = e.clientY;
+    if (isLoaderVisible()) {
+      positionHintAt(lastCursorX, lastCursorY);
+      return;
+    }
+    origOnPointerMove(e);
     if (!hintShown && segments[segments.length - 1].length >= 3) {
       onFirstDraw();
     }
@@ -726,9 +736,6 @@ window.initHoverPreviews = initHoverPreviews;
 (function () {
   const mask = document.getElementById('intro-drawing-mask');
   const intro = document.querySelector('.intro');
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/090c5104-30a8-4dd7-a802-9112c06a1703',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:intro-cursor-init',message:'intro cursor init',data:{maskExists:!!mask,introExists:!!intro},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
   if (!mask || !intro) return;
 
   var cursorImgUrl = new URL('imgs/levan.png', document.baseURI || window.location.href).href;
@@ -746,14 +753,9 @@ window.initHoverPreviews = initHoverPreviews;
     } catch (err) {
       CUSTOM_CURSOR = "url('" + cursorImgUrl + "') 8 8, auto";
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/090c5104-30a8-4dd7-a802-9112c06a1703',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:cursor-img-load',message:'cursor image resized 16x16',data:{originalW:cursorImg.naturalWidth,originalH:cursorImg.naturalHeight,usingDataUrl:!!CUSTOM_CURSOR.match(/^url\('data:/)},timestamp:Date.now(),runId:'post-fix'})}).catch(()=>{});
-    // #endregion
   };
   cursorImg.onerror = function () { CUSTOM_CURSOR = 'auto'; };
   cursorImg.src = cursorImgUrl;
-  let lastLog = 0;
-  let lastInside = null;
 
   function updateMask() {
     const r = intro.getBoundingClientRect();
@@ -776,14 +778,6 @@ window.initHoverPreviews = initHoverPreviews;
     } else {
       document.body.classList.remove('intro-cursor-active');
     }
-    // #region agent log
-    var now = Date.now();
-    if (inside !== lastInside || (inside && now - lastLog > 500)) {
-      lastInside = inside;
-      if (inside) lastLog = now;
-      fetch('http://127.0.0.1:7243/ingest/090c5104-30a8-4dd7-a802-9112c06a1703',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:onPointerMove',message:'intro hit test',data:{clientX:e.clientX,clientY:e.clientY,rectLeft:r.left,rectRight:r.right,rectTop:r.top,rectBottom:r.bottom,inside:inside,cursorSet:inside?CUSTOM_CURSOR:'default'},timestamp:Date.now(),hypothesisId:'A_E'})}).catch(()=>{});
-    }
-    // #endregion
   }
 
   updateMask();
