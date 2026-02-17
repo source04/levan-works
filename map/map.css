@@ -65,15 +65,15 @@
   color: #888;
 }
 
-/* Prevent horizontal scrollbar from the 250px gradient bleed */
+/* Prevent horizontal scrollbar from the 250px link bleed */
 body.map-page {
   overflow-x: clip;
 }
 
-/* Gradients overflow into the body padding zone */
+/* Top padding must account for .links bleed (250px) so the map does not overlap the intro. */
 .map__vis-container {
   overflow: visible;
-  padding: 24px 0;
+  padding: 150px 0 24px;
 }
 
 /* ── Vis area (height set by JS to fit content after layout) ── */
@@ -83,6 +83,7 @@ body.map-page {
   min-height: 0;
   height: 800px; /* initial layout area for Cola; JS overrides to fit content */
   position: relative;
+  overflow: visible;
 }
 
 /* ── SVG (links) — bleeds 250px on every side ── */
@@ -97,25 +98,11 @@ body.map-page {
   z-index: 1;
 }
 
-/* ── Canvas (colour blurs) — bleeds 250px, hidden until hover ── */
-
-.map__vis .blurs {
-  position: absolute;
-  top: -250px;
-  right: -250px;
-  bottom: -250px;
-  left: -250px;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0;
-  transition: all 1s;
-}
-
 /* ── Link paths ── */
 
 .map__vis .link {
   fill: none;
-  transition: all 1s;
+  transition: stroke 1s, stroke-opacity 1s, opacity 1s;
   stroke: #eeeeee;
 }
 
@@ -180,12 +167,8 @@ body.map-page {
 }
 
 /* ── Hover state ──
-   Canvas fades in, nodes cascade through 4 opacity tiers,
-   all links hidden except direct connections. */
-
-.map__vis--hover .blurs {
-  opacity: 0.7;
-}
+   Nodes cascade through 4 opacity tiers,
+   links hidden except direct connections. */
 
 .map__vis--hover .node .node__body {
   opacity: 0.05;
@@ -224,31 +207,6 @@ body.map-page {
 .map__vis--hover .link--hover {
   opacity: 1;
   stroke: black;
-}
-
-/* ── Entrance animation ──
-   Nodes and links start hidden while Cola runs, then stagger-
-   reveal after layout finishes. Once complete, the class is
-   removed so the hover system takes over normally. */
-
-.map__vis.map__vis--animating .node .node__body {
-  opacity: 0;
-  transition: none;
-}
-
-.map__vis.map__vis--animating .node.node--entered .node__body {
-  opacity: 1;
-  transition: opacity 800ms ease;
-}
-
-.map__vis.map__vis--animating .link {
-  opacity: 0;
-  transition: none;
-}
-
-.map__vis.map__vis--animating .link.link--entered {
-  opacity: 1;
-  transition: opacity 600ms ease;
 }
 
 /* ── Outro ── */
