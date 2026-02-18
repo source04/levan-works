@@ -1,5 +1,5 @@
 // Feature flag: set to true to enable cursor drawing + header icon buttons (download/reset).
-const DRAWING_AND_HEADER_ICONS_ENABLED = false;
+const DRAWING_AND_HEADER_ICONS_ENABLED = true;
 if (!DRAWING_AND_HEADER_ICONS_ENABLED) {
   document.documentElement.classList.add('drawing-and-header-icons-disabled');
 }
@@ -566,7 +566,7 @@ window.initHoverPreviews = initHoverPreviews;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#4b4b4b';
+    ctx.strokeStyle = '#EBEBEB';
     redraw();
   }
 
@@ -577,7 +577,7 @@ window.initHoverPreviews = initHoverPreviews;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#4b4b4b';
+    ctx.strokeStyle = '#EBEBEB';
     for (const seg of segments) {
       if (seg.length < 2) continue;
       ctx.beginPath();
@@ -601,7 +601,7 @@ window.initHoverPreviews = initHoverPreviews;
       ctx.lineWidth = lineWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#4b4b4b';
+      ctx.strokeStyle = '#EBEBEB';
       ctx.stroke();
     }
   }
