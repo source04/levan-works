@@ -366,7 +366,6 @@ function initHoverPreviews() {
 
   function hidePreview() {
     preview.classList.remove('project-preview--visible');
-    previewImg.removeAttribute('src');
     document.body.classList.remove('project-preview-active');
   }
 
