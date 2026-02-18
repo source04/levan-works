@@ -303,12 +303,16 @@ function loadOneImage(url) {
   function maybeRun() {
     try {
       if (localStorage.getItem(PRELOAD_STORAGE_KEY) === '1') {
+        // Hide loader UI immediately
         var loader = document.getElementById('preload-loader');
         if (loader) loader.style.display = 'none';
-        setTimeout(function () {
+  
+        // But still populate the cache silently
+        var urls = getPreviewUrls();
+        preloadAllWithProgress(urls, function () {}).then(function () {
           document.dispatchEvent(new CustomEvent('preload-complete'));
-        }, 0);
-        if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+          if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
+        });
         return;
       }
     } catch (e) {}
