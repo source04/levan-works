@@ -346,25 +346,24 @@ function initHoverPreviews() {
     preview.style.left = left + 'px';
   }
 
-  function showPreview(src) {
-    if (!src) return;
-    updatePreviewPosition();
-  
-    var fullUrl = 'imgs/works_2/' + src;
-    var cache = window._previewImageCache;
-  
-    if (cache && cache[fullUrl] && cache[fullUrl].complete) {
-      // Use the cached image's src — guaranteed instant, no re-decode
-      previewImg.src = cache[fullUrl].src;
-    } else {
-      previewImg.src = fullUrl;
-    }
-  
-    preview.classList.add('project-preview--visible');
-    document.body.classList.add('project-preview-active');
+function showPreview(src) {
+  if (!src) return;
+  updatePreviewPosition();
+
+  var fullUrl = 'imgs/works_2/' + src;
+  var cache = window._previewImageCache;
+
+  if (cache && cache[fullUrl] && cache[fullUrl].complete) {
+    previewImg.src = cache[fullUrl].src;
+  } else {
+    previewImg.src = fullUrl;
   }
 
-  function hidePreview() {
+  preview.classList.add('project-preview--visible');
+  document.body.classList.add('project-preview-active');
+}
+
+function hidePreview() {
     preview.classList.remove('project-preview--visible');
     document.body.classList.remove('project-preview-active');
   }
