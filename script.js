@@ -83,7 +83,7 @@ if (!TOOLS_ICONS_ENABLED) {
   const toggle = document.getElementById('radio-toggle');
   if (!toggle) return;
 
-  const RADIO_URL = 'https://fjaartaf.zone/';
+  const RADIO_URL = 'https://fjaartaf.zone/stream';
   const audio = new Audio(RADIO_URL);
   audio.preload = 'none';
 
