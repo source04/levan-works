@@ -135,20 +135,25 @@ if (!TOOLS_ICONS_ENABLED) {
     return urls;
   }
 
-  function loadOneImage(url) {
-    return new Promise(function (resolve) {
-      var img = new Image();
-      img.onload = function () {
-        if (typeof img.decode === 'function') {
-          img.decode().then(resolve).catch(resolve);
-        } else {
-          resolve();
-        }
-      };
-      img.onerror = resolve;
-      img.src = url;
-    });
-  }
+// Add this near the top of the preload IIFE, after IMAGE_BASE
+var imageCache = {};  // keeps Image objects alive so browser won't evict them
+window._previewImageCache = imageCache;  // expose for showPreview
+
+function loadOneImage(url) {
+  return new Promise(function (resolve) {
+    var img = new Image();
+    imageCache[url] = img;  // ← store reference, prevents GC
+    img.onload = function () {
+      if (typeof img.decode === 'function') {
+        img.decode().then(resolve).catch(resolve);
+      } else {
+        resolve();
+      }
+    };
+    img.onerror = resolve;
+    img.src = url;
+  });
+}
 
   var CONCURRENT = 8; // load up to 8 images in parallel for faster preload
 
@@ -344,7 +349,17 @@ function initHoverPreviews() {
   function showPreview(src) {
     if (!src) return;
     updatePreviewPosition();
-    previewImg.src = 'imgs/works_2/' + src;
+  
+    var fullUrl = 'imgs/works_2/' + src;
+    var cache = window._previewImageCache;
+  
+    if (cache && cache[fullUrl] && cache[fullUrl].complete) {
+      // Use the cached image's src — guaranteed instant, no re-decode
+      previewImg.src = cache[fullUrl].src;
+    } else {
+      previewImg.src = fullUrl;
+    }
+  
     preview.classList.add('project-preview--visible');
     document.body.classList.add('project-preview-active');
   }
