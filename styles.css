@@ -136,6 +136,14 @@ html.drawing-enabled * {
   -webkit-user-select: none;
 }
 
+/* When drawing + header icons are disabled (DRAWING_AND_HEADER_ICONS_ENABLED = false in script.js) */
+html.drawing-and-header-icons-disabled .cursor-drawing,
+html.drawing-and-header-icons-disabled .intro-drawing-mask,
+html.drawing-and-header-icons-disabled .drawing-hint-tooltip,
+html.drawing-and-header-icons-disabled .header-actions {
+  display: none !important;
+}
+
 .cursor-drawing {
   position: fixed;
   top: 0;

@@ -1,3 +1,9 @@
+// Feature flag: set to true to enable cursor drawing + header icon buttons (download/reset).
+const DRAWING_AND_HEADER_ICONS_ENABLED = false;
+if (!DRAWING_AND_HEADER_ICONS_ENABLED) {
+  document.documentElement.classList.add('drawing-and-header-icons-disabled');
+}
+
 // Live time in header
 function updateHeaderTime() {
   const el = document.getElementById('header-time');
@@ -27,6 +33,7 @@ function drawingCanvasWithWhiteBg(sourceCanvas) {
 
 // Download current drawing as PNG
 (function () {
+  if (!DRAWING_AND_HEADER_ICONS_ENABLED) return;
   const button = document.getElementById('download-drawing');
   const canvas = document.getElementById('cursor-drawing');
   if (!button || !canvas) return;
@@ -520,6 +527,7 @@ window.initHoverPreviews = initHoverPreviews;
 
 // Cursor drawing: thin persistent line, no delay, no fade
 (function () {
+  if (!DRAWING_AND_HEADER_ICONS_ENABLED) return;
   const canvas = document.getElementById('cursor-drawing');
   if (!canvas) return;
 
@@ -712,6 +720,7 @@ window.initHoverPreviews = initHoverPreviews;
 
 // Reset drawing button (dispatches event so drawing module clears canvas)
 (function () {
+  if (!DRAWING_AND_HEADER_ICONS_ENABLED) return;
   const btn = document.getElementById('reset-drawing');
   if (!btn) return;
   btn.addEventListener('click', function () {
@@ -751,6 +760,7 @@ window.initHoverPreviews = initHoverPreviews;
 
 // Intro block mask: drawing is hidden in this area (appears behind it)
 (function () {
+  if (!DRAWING_AND_HEADER_ICONS_ENABLED) return;
   const mask = document.getElementById('intro-drawing-mask');
   const intro = document.querySelector('.intro');
   if (!mask || !intro) return;
