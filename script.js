@@ -134,7 +134,7 @@ if (!TOOLS_ICONS_ENABLED) {
     var urls = [];
     for (var i = 0; i < nodes.length; i++) {
       var src = nodes[i].getAttribute('data-preview');
-      if (src && !seen[src]) {
+      if (src && !seen[src] && !/\.(mp4|webm|ogg)(\?|$)/i.test(src)) {
         seen[src] = true;
         urls.push(IMAGE_BASE + src);
       }
@@ -337,6 +337,7 @@ function loadOneImage(url) {
 function initHoverPreviews() {
   const preview = document.getElementById('project-preview');
   const previewImg = document.getElementById('project-preview-img');
+  const previewVideo = document.getElementById('project-preview-video');
   const projects = document.querySelector('.projects');
   if (!preview || !previewImg || !projects) return;
 
@@ -362,19 +363,38 @@ function showPreview(src) {
   updatePreviewPosition();
 
   var fullUrl = 'imgs/works_2/' + src;
-  var cache = window._previewImageCache;
+  var isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(src);
 
-  if (cache && cache[fullUrl] && cache[fullUrl].complete) {
-    previewImg.src = cache[fullUrl].src;
+  if (isVideo && previewVideo) {
+    previewImg.style.display = 'none';
+    previewVideo.style.display = 'block';
+    previewVideo.src = fullUrl;
+    previewVideo.play().catch(function () {});
+    preview.classList.add('project-preview--visible');
+    document.body.classList.add('project-preview-active');
   } else {
-    previewImg.src = fullUrl;
+    if (previewVideo) {
+      previewVideo.pause();
+      previewVideo.removeAttribute('src');
+      previewVideo.style.display = 'none';
+    }
+    previewImg.style.display = 'block';
+    var cache = window._previewImageCache;
+    if (cache && cache[fullUrl] && cache[fullUrl].complete) {
+      previewImg.src = cache[fullUrl].src;
+    } else {
+      previewImg.src = fullUrl;
+    }
+    preview.classList.add('project-preview--visible');
+    document.body.classList.add('project-preview-active');
   }
-
-  preview.classList.add('project-preview--visible');
-  document.body.classList.add('project-preview-active');
 }
 
 function hidePreview() {
+    if (previewVideo) {
+      previewVideo.pause();
+      previewVideo.removeAttribute('src');
+    }
     preview.classList.remove('project-preview--visible');
     document.body.classList.remove('project-preview-active');
   }

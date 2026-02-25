@@ -533,6 +533,10 @@ a:hover {
   background-color: #E7F1F1;
 }
 
+.project-name--glass {
+  background-color: #FEFFD3;
+}
+
 /* Project description tooltip (follows cursor) */
 .project-description-tooltip {
   position: fixed;
@@ -667,10 +671,15 @@ a:hover {
   opacity: 0;
 }
 
-.project-preview img {
+.project-preview img,
+.project-preview video {
   display: block;
   max-width: 60vw;
   max-height: 80vh;
+}
+
+.project-preview video {
+  display: none;
 }
 
 .project-preview--visible {
@@ -684,7 +693,8 @@ a:hover {
     padding-right: 24px;
     box-sizing: border-box;
   }
-  .project-preview img {
+  .project-preview img,
+  .project-preview video {
     max-width: 100%;
     max-height: 70vh;
   }
