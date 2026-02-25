@@ -128,17 +128,13 @@ if (!TOOLS_ICONS_ENABLED) {
   var TIMEOUT_MS = 10000;
   var FADE_OUT_MS = 200;
 
-  function isVideoUrl(url) {
-    return /\.(mp4|webm|ogg)(\?|$)/i.test(url);
-  }
-
   function getPreviewUrls() {
     var nodes = document.querySelectorAll('[data-preview]');
     var seen = {};
     var urls = [];
     for (var i = 0; i < nodes.length; i++) {
       var src = nodes[i].getAttribute('data-preview');
-      if (src && !seen[src]) {
+      if (src && !seen[src] && !/\.(mp4|webm|ogg)(\?|$)/i.test(src)) {
         seen[src] = true;
         urls.push(IMAGE_BASE + src);
       }
@@ -146,38 +142,27 @@ if (!TOOLS_ICONS_ENABLED) {
     return urls;
   }
 
-  var imageCache = {};
-  window._previewImageCache = imageCache;
+// Add this near the top of the preload IIFE, after IMAGE_BASE
+var imageCache = {};  // keeps Image objects alive so browser won't evict them
+window._previewImageCache = imageCache;  // expose for showPreview
 
-  function loadOneImage(url) {
-    return new Promise(function (resolve) {
-      var img = new Image();
-      imageCache[url] = img;
-      img.onload = function () {
-        if (typeof img.decode === 'function') {
-          img.decode().then(resolve).catch(resolve);
-        } else {
-          resolve();
-        }
-      };
-      img.onerror = resolve;
-      img.src = url;
-    });
-  }
+function loadOneImage(url) {
+  return new Promise(function (resolve) {
+    var img = new Image();
+    imageCache[url] = img;  // ← store reference, prevents GC
+    img.onload = function () {
+      if (typeof img.decode === 'function') {
+        img.decode().then(resolve).catch(resolve);
+      } else {
+        resolve();
+      }
+    };
+    img.onerror = resolve;
+    img.src = url;
+  });
+}
 
-  function loadOneVideo(url) {
-    return new Promise(function (resolve) {
-      var video = document.createElement('video');
-      video.muted = true;
-      video.preload = 'auto';
-      video.onloadeddata = function () { resolve(); };
-      video.onerror = resolve;
-      video.oncanplay = function () { resolve(); };
-      video.src = url;
-    });
-  }
-
-  var CONCURRENT = 8;
+  var CONCURRENT = 8; // load up to 8 images in parallel for faster preload
 
   function preloadAllWithProgress(urls, onProgress) {
     var total = urls.length;
@@ -188,15 +173,12 @@ if (!TOOLS_ICONS_ENABLED) {
         onProgress(total === 0 ? 100 : Math.round((done / total) * 100));
       } catch (e) {}
     }
-    function loadOne(url) {
-      return isVideoUrl(url) ? loadOneVideo(url) : loadOneImage(url);
-    }
     function loadBatch(start) {
       if (start >= total) return Promise.resolve();
       var end = Math.min(start + CONCURRENT, total);
       var batch = [];
       for (var i = start; i < end; i++) {
-        batch.push(loadOne(urls[i]).then(function () {
+        batch.push(loadOneImage(urls[i]).then(function () {
           done++;
           report();
         }));
@@ -304,9 +286,6 @@ if (!TOOLS_ICONS_ENABLED) {
       return;
     }
     var urls = getPreviewUrls();
-    urls = urls.slice().sort(function (a, b) {
-      return (isVideoUrl(a) ? 0 : 1) - (isVideoUrl(b) ? 0 : 1);
-    });
     setProgress(0);
     var preloadDone = preloadAllWithProgress(urls, setProgress);
     var timeout = new Promise(function (r) {
@@ -335,11 +314,8 @@ if (!TOOLS_ICONS_ENABLED) {
         var loader = document.getElementById('preload-loader');
         if (loader) loader.style.display = 'none';
   
-        // But still populate the cache silently (videos first)
+        // But still populate the cache silently
         var urls = getPreviewUrls();
-        urls = urls.slice().sort(function (a, b) {
-          return (isVideoUrl(a) ? 0 : 1) - (isVideoUrl(b) ? 0 : 1);
-        });
         preloadAllWithProgress(urls, function () {}).then(function () {
           document.dispatchEvent(new CustomEvent('preload-complete'));
           if (typeof window.initHoverPreviews === 'function') window.initHoverPreviews();
