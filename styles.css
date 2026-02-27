@@ -680,6 +680,15 @@ a:hover {
 
 .project-preview video {
   display: none;
+  transition: opacity 0.2s;
+}
+
+.project-preview--video-loading {
+  border: 1px solid rgba(235, 235, 235, 0.5);
+}
+
+.project-preview--video-loading video {
+  opacity: 0;
 }
 
 .project-preview--visible {

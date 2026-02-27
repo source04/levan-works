@@ -61,7 +61,12 @@ function drawingCanvasWithWhiteBg(sourceCanvas) {
   button.addEventListener('click', function () {
     if (!canvas.width || !canvas.height) return;
 
-    const exportCanvas = drawingCanvasWithWhiteBg(canvas);
+    let exportCanvas = document.createElement('canvas');
+    if (typeof window.exportDrawingToCanvas === 'function') {
+      window.exportDrawingToCanvas(exportCanvas);
+    } else {
+      exportCanvas = drawingCanvasWithWhiteBg(canvas);
+    }
     if (exportCanvas.toBlob) {
       exportCanvas.toBlob(function (blob) {
         if (!blob) return;
@@ -366,12 +371,33 @@ function showPreview(src) {
   var isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(src);
 
   if (isVideo && previewVideo) {
+    // Show video placeholder frame immediately
     previewImg.style.display = 'none';
     previewVideo.style.display = 'block';
-    previewVideo.src = fullUrl;
-    previewVideo.play().catch(function () {});
     preview.classList.add('project-preview--visible');
     document.body.classList.add('project-preview-active');
+    preview.classList.add('project-preview--video-loading');
+
+    // Reset previous listeners
+    previewVideo.pause();
+    previewVideo.removeAttribute('src');
+
+    const onLoaded = function () {
+      preview.classList.remove('project-preview--video-loading');
+      previewVideo.play().catch(function () {});
+      previewVideo.removeEventListener('loadeddata', onLoaded);
+      previewVideo.removeEventListener('error', onError);
+    };
+
+    const onError = function () {
+      preview.classList.remove('project-preview--video-loading');
+      previewVideo.removeEventListener('loadeddata', onLoaded);
+      previewVideo.removeEventListener('error', onError);
+    };
+
+    previewVideo.addEventListener('loadeddata', onLoaded);
+    previewVideo.addEventListener('error', onError);
+    previewVideo.src = fullUrl;
   } else {
     if (previewVideo) {
       previewVideo.pause();
@@ -391,13 +417,14 @@ function showPreview(src) {
 }
 
 function hidePreview() {
-    if (previewVideo) {
-      previewVideo.pause();
-      previewVideo.removeAttribute('src');
-    }
-    preview.classList.remove('project-preview--visible');
-    document.body.classList.remove('project-preview-active');
+  if (previewVideo) {
+    previewVideo.pause();
+    previewVideo.removeAttribute('src');
   }
+  preview.classList.remove('project-preview--video-loading');
+  preview.classList.remove('project-preview--visible');
+  document.body.classList.remove('project-preview-active');
+}
 
   function setActiveItem(li) {
     if (activeItem) activeItem.classList.remove('project-item--active');
@@ -729,6 +756,28 @@ window.initHoverPreviews = initHoverPreviews;
     }
     positionHintAt(lastCursorX, lastCursorY);
   }
+
+  // Export for download: redraw segments with #282828 on white (on-screen stays light)
+  window.exportDrawingToCanvas = function (exportCanvas) {
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+    const outCtx = exportCanvas.getContext('2d');
+    outCtx.fillStyle = '#ffffff';
+    outCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    outCtx.setTransform(1, 0, 0, 1, 0, 0);
+    outCtx.scale(dpr, dpr);
+    outCtx.lineWidth = lineWidth;
+    outCtx.lineCap = 'round';
+    outCtx.lineJoin = 'round';
+    outCtx.strokeStyle = '#282828';
+    for (const seg of segments) {
+      if (seg.length < 2) continue;
+      outCtx.beginPath();
+      outCtx.moveTo(seg[0].x, seg[0].y);
+      for (let i = 1; i < seg.length; i++) outCtx.lineTo(seg[i].x, seg[i].y);
+      outCtx.stroke();
+    }
+  };
 
   resize();
   window.addEventListener('resize', resize);
