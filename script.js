@@ -19,6 +19,8 @@ function updateHeaderTime() {
 updateHeaderTime();
 setInterval(updateHeaderTime, 1000);
 
+const VIDEO_PREVIEW_MIN_FRAME_MS = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 3000 : 0;
+
 // Export drawing canvas with white background (for download/send)
 function drawingCanvasWithWhiteBg(sourceCanvas) {
   const out = document.createElement('canvas');
@@ -363,7 +365,7 @@ function initHoverPreviews() {
     preview.style.left = left + 'px';
   }
 
-function showPreview(src) {
+function showPreview(src, sourceLi) {
   if (!src) return;
   updatePreviewPosition();
 
@@ -371,20 +373,36 @@ function showPreview(src) {
   var isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(src);
 
   if (isVideo && previewVideo) {
-    // Show video placeholder frame immediately
+    // Show video placeholder frame immediately, sized to this video's dimensions
     previewImg.style.display = 'none';
     previewVideo.style.display = 'block';
     preview.classList.add('project-preview--visible');
     document.body.classList.add('project-preview-active');
     preview.classList.add('project-preview--video-loading');
 
+    var w = sourceLi && sourceLi.getAttribute('data-preview-width');
+    var h = sourceLi && sourceLi.getAttribute('data-preview-height');
+    if (w && h) {
+      preview.style.aspectRatio = w + '/' + h;
+    } else {
+      preview.style.aspectRatio = '';
+    }
+
     // Reset previous listeners
     previewVideo.pause();
     previewVideo.removeAttribute('src');
 
+    var loadStart = Date.now();
+
     const onLoaded = function () {
-      preview.classList.remove('project-preview--video-loading');
-      previewVideo.play().catch(function () {});
+      const elapsed = Date.now() - loadStart;
+      const delay = Math.max(0, VIDEO_PREVIEW_MIN_FRAME_MS - elapsed);
+      const finish = function () {
+        preview.classList.remove('project-preview--video-loading');
+        if (!preview.classList.contains('project-preview--visible')) return;
+        previewVideo.play().catch(function () {});
+      };
+      setTimeout(finish, delay);
       previewVideo.removeEventListener('loadeddata', onLoaded);
       previewVideo.removeEventListener('error', onError);
     };
@@ -404,6 +422,7 @@ function showPreview(src) {
       previewVideo.removeAttribute('src');
       previewVideo.style.display = 'none';
     }
+    preview.style.aspectRatio = '';
     previewImg.style.display = 'block';
     var cache = window._previewImageCache;
     if (cache && cache[fullUrl] && cache[fullUrl].complete) {
@@ -421,6 +440,7 @@ function hidePreview() {
     previewVideo.pause();
     previewVideo.removeAttribute('src');
   }
+  preview.style.aspectRatio = '';
   preview.classList.remove('project-preview--video-loading');
   preview.classList.remove('project-preview--visible');
   document.body.classList.remove('project-preview-active');
@@ -445,7 +465,7 @@ function hidePreview() {
         hidePreview();
         return;
       }
-      showPreview(src);
+      showPreview(src, li);
     },
     { passive: true }
   );
@@ -478,7 +498,7 @@ function hidePreview() {
           hidePreview();
           setActiveItem(null);
         } else {
-          showPreview(src);
+          showPreview(src, li);
           setActiveItem(li);
         }
       } else {
