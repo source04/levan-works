@@ -10,6 +10,17 @@
   <link rel="stylesheet" href="map.css" />
 </head>
 <body class="map-page">
+  <script>
+    (function () {
+      try {
+        var isSmall = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+        var isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        if (isSmall || isCoarse) {
+          window.location.replace('../index.html');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <div class="header-spacer" aria-hidden="true"></div>
   <header class="site-header">
     <span class="header-url">https://levan.work/map</span>

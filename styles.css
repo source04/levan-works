@@ -434,9 +434,12 @@ h1 {
   transition: none;
 }
 
-body.project-preview-active .intro,
-body.project-preview-active .intro-drawing-mask {
+body.project-preview-active .intro {
   opacity: 0.3;
+}
+
+body.project-preview-active .intro-drawing-mask {
+  opacity: 0;
 }
 
 /* Custom cursor for .intro is set in JS (16x16 resized); do not set here or it overrides body */
